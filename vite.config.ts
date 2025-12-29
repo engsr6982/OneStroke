@@ -1,10 +1,10 @@
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { resolve, dirname } from 'node:path'
 
-// https://vite.dev/config/
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
 export default defineConfig({
   plugins: [vue()],
   build: {
@@ -14,7 +14,7 @@ export default defineConfig({
     assetsDir: '.',
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'src/popup.ts'),
+        popup: resolve(__dirname, 'src/popup/main.ts'),
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
       },
