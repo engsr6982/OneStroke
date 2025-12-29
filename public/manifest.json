@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "OneStroke",
+  "version": "0.0.1",
+  "description": "AI 划词总结 / AI 划词解释",
+  "permissions": ["storage", "scripting"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
