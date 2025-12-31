@@ -1,20 +1,50 @@
 {
   "manifest_version": 3,
   "name": "OneStroke",
-  "version": "0.0.1",
-  "description": "AI 划词总结 / AI 划词解释",
-  "permissions": ["storage", "scripting"],
+  "version": "0.1.0",
+  "description": "AI 划词总结 / AI 划词笔记 / AI 划词解析",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.openai.com/*",
+    "https://*.aliyuncs.com/*",
+    "https://*.deepseek.com/*"
+  ],
   "action": {
     "default_popup": "popup.html"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "loader.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content.js",
+        "assets/*",
+        "*.js",
+        "*.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

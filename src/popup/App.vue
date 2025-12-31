@@ -11,7 +11,7 @@
       <!-- 1. 模型配置 -->
       <el-tab-pane label="模型配置" name="model">
         <el-form :model="config" label-position="top" size="small">
-          <el-form-item label="AI 提供商">
+          <el-form-item label="AI 提供商(内置模板)">
             <el-text class="mx-1" type="danger">仅支持兼容 OpenAI SDK 的模型</el-text>
             <el-select v-model="config.provider" placeholder="选择提供商" @change="handleProviderChange">
               <!-- 动态生成选择项 -->
@@ -68,7 +68,7 @@
             <el-button type="danger" link size="small" @click="clearHistory">清空历史</el-button>
           </div>
 
-          <el-scrollbar height="320px">
+          <el-scrollbar>
             <el-card v-for="item in historyList" :key="item.id" shadow="hover" class="history-card">
               <template #header>
                 <div class="card-header">
@@ -91,31 +91,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { AiProvider, DEFAULT_CONFIG, DEFAULT_PROMPTS } from '../types/storage'
 import type { AiConfig, PromptConfig, HistoryItem } from '../types/storage'
 
-// 状态定义
 const activeTab = ref('model')
 const saving = ref(false)
 const config = reactive<AiConfig>({ ...DEFAULT_CONFIG })
 const prompts = reactive<PromptConfig>({ ...DEFAULT_PROMPTS })
 const historyList = ref<HistoryItem[]>([])
 
-// 初始化加载
+const loadHistory = async () => {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    const data = await chrome.storage.local.get('history')
+    if (data.history) {
+      // 按时间倒序
+      historyList.value = data.history.sort((a: HistoryItem, b: HistoryItem) => b.timestamp - a.timestamp)
+    }
+  }
+}
+
+const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+  if (areaName === 'local' && changes.history) {
+    console.log('History updated externally')
+    // 更新本地列表
+    historyList.value = changes.history.newValue || []
+  }
+}
+
 onMounted(async () => {
   if (typeof chrome !== 'undefined' && chrome.storage) {
-    // 加载配置
     const settings = await chrome.storage.sync.get(['config', 'prompts'])
     if (settings.config) Object.assign(config, settings.config)
     if (settings.prompts) Object.assign(prompts, settings.prompts)
 
-    // 加载历史
-    const history = await chrome.storage.local.get('history')
-    if (history.history) {
-      historyList.value = history.history.sort((a: HistoryItem, b: HistoryItem) => b.timestamp - a.timestamp)
-    }
+    await loadHistory()
+    chrome.storage.onChanged.addListener(handleStorageChange)
+  }
+})
+onUnmounted(() => {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    chrome.storage.onChanged.removeListener(handleStorageChange)
   }
 })
 
@@ -125,7 +142,6 @@ const handleProviderChange = (val: string) => {
   config.model = provider.model;
 }
 
-// 保存所有设置
 const saveSettings = async () => {
   saving.value = true
   try {
@@ -156,7 +172,6 @@ const resetPrompts = () => {
 const clearHistory = async () => {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     await chrome.storage.local.remove('history')
-    historyList.value = []
     ElMessage.success('历史记录已清空')
   }
 }
@@ -213,6 +228,10 @@ const formatDate = (ts: number) => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.history-list {
+  height: 400px;
 }
 
 /* 历史记录卡片样式 */
