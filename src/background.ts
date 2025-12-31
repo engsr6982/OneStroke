@@ -1,17 +1,18 @@
 import OpenAI from 'openai'
-import { DEFAULT_CONFIG, DEFAULT_PROMPTS, type HistoryItem } from './types/storage'
+import { DEFAULT_CONFIG, DEFAULT_PROMPTS, type HistoryItem, type PromptTag } from './types/storage'
 import type { AppMessage } from './types/message'
 
 async function sendMessageToTab(tabId: number, message: AppMessage) {
   try {
     await chrome.tabs.sendMessage(tabId, message)
     console.log(`Message sent to tab ${tabId}: ${message.action}`)
+    return true
   } catch (err) {
     console.error(`Failed to send ${message.action} to tab ${tabId}`, err)
-
     if (message.action === 'OPEN_WINDOW') {
       console.warn('💡 提示: 请刷新目标网页，确保 Content Script 已注入。')
     }
+    return false
   }
 }
 
@@ -40,25 +41,44 @@ chrome.runtime.onInstalled.addListener(() => {
     title: '💡 划词解析',
     contexts: ['selection'],
   })
+  chrome.contextMenus.create({
+    parentId: 'onestroke_root',
+    id: 'separator',
+    type: 'separator',
+    contexts: ['selection'],
+  })
+  chrome.contextMenus.create({
+    parentId: 'onestroke_root',
+    id: 'open_sidepanel',
+    title: '📂 打开历史记录面板',
+    contexts: ['selection', 'page'],
+  })
 })
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (!tab?.id) return
-  if (!info.selectionText) return
 
-  const type = info.menuItemId as 'summary' | 'note' | 'explain'
+  // 侧边栏
+  if (info.menuItemId === 'open_sidepanel') {
+    await chrome.sidePanel.open({ windowId: tab.windowId })
+    return
+  }
+
+  if (!info.selectionText) return
+  const type = info.menuItemId as PromptTag
 
   console.log(`Menu clicked: ${type}`)
 
-  await sendMessageToTab(tab.id, {
+  const result = await sendMessageToTab(tab.id, {
     action: 'OPEN_WINDOW',
     windowType: type,
   })
-
-  await handleAiRequest(tab.id, type, info.selectionText)
+  if (result) {
+    await handleAiRequest(tab.id, type, info.selectionText)
+  }
 })
 
-async function handleAiRequest(tabId: number, type: 'summary' | 'note' | 'explain', text: string) {
+async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
   try {
     const settings = await chrome.storage.sync.get(['config', 'prompts'])
     const config = settings.config || DEFAULT_CONFIG
@@ -114,7 +134,7 @@ async function handleAiRequest(tabId: number, type: 'summary' | 'note' | 'explai
   }
 }
 
-async function saveHistory(type: 'summary' | 'note' | 'explain', original: string, result: string) {
+async function saveHistory(type: PromptTag, original: string, result: string) {
   try {
     const data = await chrome.storage.local.get('history')
     const history: HistoryItem[] = data.history || []

@@ -1,3 +1,5 @@
+import type { PromptTag } from './storage'
+
 export type MessageType = 'PING' | 'OPEN_WINDOW' | 'STREAM_CHUNK' | 'STREAM_END' | 'ERROR'
 
 export interface BaseMessage {
@@ -10,7 +12,7 @@ export interface PingMessage extends BaseMessage {
 
 export interface OpenWindowMessage extends BaseMessage {
   action: 'OPEN_WINDOW'
-  windowType: 'summary' | 'note' | 'explain'
+  windowType: PromptTag
 }
 
 export interface StreamChunkMessage extends BaseMessage {

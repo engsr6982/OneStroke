@@ -11,7 +11,7 @@ const DRIVE_LETTER_REGEX = /^[a-z]:/i
 export default defineConfig({
   plugins: [vue()],
   build: {
-    // minify: false, // false to debug
+    minify: false, // false to debug
     outDir: 'dist',
     emptyOutDir: true,
     copyPublicDir: true,
@@ -22,6 +22,7 @@ export default defineConfig({
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content/content.ts'),
         loader: resolve(__dirname, 'src/content/loader.ts'),
+        sidepanel: resolve(__dirname, 'src/sidepanel/main.ts'),
       },
       output: {
         entryFileNames: '[name].js',

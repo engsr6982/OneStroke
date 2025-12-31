@@ -1,6 +1,6 @@
-import { createApp } from 'vue'
 import App from './App.vue'
 import type { AppMessage } from '../types/message'
+import { appendCssLinkTo, createVueApp } from '@/helper'
 
 const log = (msg: string, ...args: unknown[]) =>
   console.log(`%c[OneStroke Content] ${msg}`, 'color: #409eff; font-weight: bold;', ...args)
@@ -30,17 +30,14 @@ function initUI() {
   const shadowRoot = container.attachShadow({ mode: 'open' })
 
   // 手动导入 Vite 打包出的 CSS
-  const cssLink = document.createElement('link')
-  cssLink.rel = 'stylesheet'
-  cssLink.href = chrome.runtime.getURL('content.css')
-  shadowRoot.appendChild(cssLink)
+  appendCssLinkTo(shadowRoot, 'content.css')
 
   // 创建 vue 挂载点
   const mountPoint = document.createElement('div')
   shadowRoot.appendChild(mountPoint)
 
-  const app = createApp(App)
-  appInstance = app.mount(mountPoint) as InstanceType<typeof App>
+  appInstance = createVueApp(App, mountPoint, false) as InstanceType<typeof App>
+
   log('UI Initialized')
 }
 

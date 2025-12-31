@@ -4,7 +4,7 @@ export interface ModelDescriptor {
   baseUrl: string
 }
 
-export const AiProvider = {
+export const AiProviderTemplate = {
   qianwen: {
     label: '阿里云 - 通义千问',
     model: 'qwen3-max',
@@ -23,7 +23,7 @@ export const AiProvider = {
 } as const
 
 export interface AiConfig {
-  provider: keyof typeof AiProvider
+  provider: keyof typeof AiProviderTemplate
   apiKey: string
   baseUrl: string
   model: string
@@ -35,9 +35,11 @@ export interface PromptConfig {
   explain: string
 }
 
+export type PromptTag = keyof PromptConfig
+
 export interface HistoryItem {
   id: string
-  type: 'summary' | 'note' | 'explain'
+  type: PromptTag
   originalText: string
   result: string
   timestamp: number
@@ -47,8 +49,8 @@ export interface HistoryItem {
 export const DEFAULT_CONFIG: AiConfig = {
   provider: 'qianwen',
   apiKey: '',
-  baseUrl: AiProvider['qianwen'].baseUrl,
-  model: AiProvider['qianwen'].model,
+  baseUrl: AiProviderTemplate['qianwen'].baseUrl,
+  model: AiProviderTemplate['qianwen'].model,
 }
 
 export const DEFAULT_PROMPTS: PromptConfig = {

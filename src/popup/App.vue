@@ -7,15 +7,18 @@
     </div>
 
     <el-tabs v-model="activeTab" class="tabs">
-
       <!-- 1. 模型配置 -->
       <el-tab-pane label="模型配置" name="model">
         <el-form :model="config" label-position="top" size="small">
           <el-form-item label="AI 提供商(内置模板)">
             <el-text class="mx-1" type="danger">仅支持兼容 OpenAI SDK 的模型</el-text>
-            <el-select v-model="config.provider" placeholder="选择提供商" @change="handleProviderChange">
+            <el-select
+              v-model="config.provider"
+              placeholder="选择提供商"
+              @change="handleProviderChange"
+            >
               <!-- 动态生成选择项 -->
-              <template v-for="provider, key in AiProvider" :key="key">
+              <template v-for="(provider, key) in AiProviderTemplate" :key="key">
                 <el-option :label="provider.label" :value="key" />
               </template>
             </el-select>
@@ -33,7 +36,9 @@
             <el-input v-model="config.model" placeholder="gpt-4o" />
           </el-form-item>
 
-          <el-button type="primary" class="w-full" @click="saveSettings" :loading="saving">保存配置</el-button>
+          <el-button type="primary" class="w-full" @click="saveSettings" :loading="saving"
+            >保存配置</el-button
+          >
         </el-form>
       </el-tab-pane>
 
@@ -52,7 +57,9 @@
 
           <div class="btn-group">
             <el-button @click="resetPrompts">恢复默认</el-button>
-            <el-button type="primary" @click="saveSettings" :loading="saving">保存 Prompt</el-button>
+            <el-button type="primary" @click="saveSettings" :loading="saving"
+              >保存 Prompt</el-button
+            >
           </div>
         </el-form>
       </el-tab-pane>
@@ -72,7 +79,9 @@
             <el-card v-for="item in historyList" :key="item.id" shadow="hover" class="history-card">
               <template #header>
                 <div class="card-header">
-                  <el-tag size="small" :type="getTagType(item.type)">{{ getTagName(item.type) }}</el-tag>
+                  <el-tag size="small" :type="getTagType(item.type)">{{
+                    getTagName(item.type)
+                  }}</el-tag>
                   <span class="time">{{ formatDate(item.timestamp) }}</span>
                 </div>
               </template>
@@ -85,7 +94,6 @@
           </el-scrollbar>
         </div>
       </el-tab-pane>
-
     </el-tabs>
   </div>
 </template>
@@ -93,8 +101,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { AiProvider, DEFAULT_CONFIG, DEFAULT_PROMPTS } from '../types/storage'
+import { AiProviderTemplate, DEFAULT_CONFIG, DEFAULT_PROMPTS } from '../types/storage'
 import type { AiConfig, PromptConfig, HistoryItem } from '../types/storage'
+import { formatDate, getTagName, getTagType } from '@/helper'
 
 const activeTab = ref('model')
 const saving = ref(false)
@@ -107,12 +116,17 @@ const loadHistory = async () => {
     const data = await chrome.storage.local.get('history')
     if (data.history) {
       // 按时间倒序
-      historyList.value = data.history.sort((a: HistoryItem, b: HistoryItem) => b.timestamp - a.timestamp)
+      historyList.value = data.history.sort(
+        (a: HistoryItem, b: HistoryItem) => b.timestamp - a.timestamp,
+      )
     }
   }
 }
 
-const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+const handleStorageChange = (
+  changes: { [key: string]: chrome.storage.StorageChange },
+  areaName: string,
+) => {
   if (areaName === 'local' && changes.history) {
     console.log('History updated externally')
     // 更新本地列表
@@ -137,9 +151,9 @@ onUnmounted(() => {
 })
 
 const handleProviderChange = (val: string) => {
-  const provider = AiProvider[val as keyof typeof AiProvider];
-  config.baseUrl = provider.baseUrl;
-  config.model = provider.model;
+  const provider = AiProviderTemplate[val as keyof typeof AiProviderTemplate]
+  config.baseUrl = provider.baseUrl
+  config.model = provider.model
 }
 
 const saveSettings = async () => {
@@ -148,7 +162,7 @@ const saveSettings = async () => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       await chrome.storage.sync.set({
         config: { ...config },
-        prompts: { ...prompts }
+        prompts: { ...prompts },
       })
       ElMessage.success('设置已保存')
     } else {
@@ -175,21 +189,6 @@ const clearHistory = async () => {
     ElMessage.success('历史记录已清空')
   }
 }
-
-// 工具函数
-const getTagType = (type: string) => {
-  const map: Record<string, string> = { summary: 'primary', note: 'warning', explain: 'success' }
-  return map[type] || 'info'
-}
-
-const getTagName = (type: string) => {
-  const map: Record<string, string> = { summary: '总结', note: '笔记', explain: '解析' }
-  return map[type] || type
-}
-
-const formatDate = (ts: number) => {
-  return new Date(ts).toLocaleString('zh-CN', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-}
 </script>
 
 <style scoped>
@@ -199,7 +198,9 @@ const formatDate = (ts: number) => {
   min-height: 500px;
   padding: 16px;
   background-color: #fff;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family:
+    'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑',
+    Arial, sans-serif;
 }
 
 .header {
