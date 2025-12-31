@@ -1,12 +1,13 @@
-import App from './App.vue'
+import ContentApp from './ContentApp.ce.vue'
 import type { AppMessage } from '../types/message'
-import { appendCssLinkTo, createVueApp } from '@/helper'
+import { createVueApp } from '@/helper'
+import elementPlusCss from 'element-plus/dist/index.css?inline'
 
 const log = (msg: string, ...args: unknown[]) =>
   console.log(`%c[OneStroke Content] ${msg}`, 'color: #409eff; font-weight: bold;', ...args)
 
 const containerId = 'onestroke-container-root'
-let appInstance: InstanceType<typeof App> | null = null
+let appInstance: InstanceType<typeof ContentApp> | null = null
 let lastMouseX = 0
 let lastMouseY = 0
 
@@ -29,14 +30,16 @@ function initUI() {
 
   const shadowRoot = container.attachShadow({ mode: 'open' })
 
-  // 手动导入 Vite 打包出的 CSS
-  appendCssLinkTo(shadowRoot, 'content.css')
+  const appStyles = (ContentApp.styles || []).join('')
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = elementPlusCss + appStyles
+  shadowRoot.appendChild(styleSheet)
 
   // 创建 vue 挂载点
   const mountPoint = document.createElement('div')
   shadowRoot.appendChild(mountPoint)
 
-  appInstance = createVueApp(App, mountPoint, false) as InstanceType<typeof App>
+  appInstance = createVueApp(ContentApp, mountPoint, false) as InstanceType<typeof ContentApp>
 
   log('UI Initialized')
 }

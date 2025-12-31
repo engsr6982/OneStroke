@@ -102,3 +102,9 @@ https://github.com/vitejs/vite/issues/9119
 > 在扩展的 **错误** 选项卡里, 有另一条报错：`Uncaught SyntaxError: Cannot use import statement outside a module`
 
 解决方案：使用一个空壳文件动态 import 真正的 content.js
+
+### 4. 开发时需要频繁打包，加载扩展，非常麻烦
+
+搜索得知，可以使用 **crxjs** 插件，实现热更新，解决开发时繁琐的构建、重加载
+
+> 迁移到 crxjs 后，发现前面踩过的坑，crxjs 都已经解决了(白踩了)

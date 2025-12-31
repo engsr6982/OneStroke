@@ -1,7 +1,6 @@
 /* 辅助工具 */
 import { createApp, type Component } from 'vue'
 import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import { type PromptTag } from './types/storage'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -11,20 +10,6 @@ export function appendCssLinkTo(h5: HTMLElement | ShadowRoot, url: `${string}.cs
   cssLink.rel = 'stylesheet'
   cssLink.href = chrome.runtime.getURL(url)
   h5.appendChild(cssLink)
-}
-
-export function tryLoadElementPlusCss(mountPoint: string | HTMLElement) {
-  if (typeof mountPoint === 'string') {
-    if (mountPoint.startsWith('#')) {
-      mountPoint = mountPoint.slice(1) // 去掉 #
-    }
-    const element = document.getElementById(mountPoint)
-    if (!element) {
-      return
-    }
-    mountPoint = element
-  }
-  appendCssLinkTo(mountPoint, 'plugin-vueexport-helper.css')
 }
 
 export function createVueApp<T extends Component>(
@@ -42,11 +27,7 @@ export function createVueApp<T extends Component>(
       app.component(key, component)
     }
   }
-
-  const instance = app.mount(mountPoint)
-  tryLoadElementPlusCss(mountPoint)
-
-  return instance
+  return app.mount(mountPoint)
 }
 
 export const TAGS = ['summarize', 'note', 'explain'] as const as PromptTag[]
