@@ -11,7 +11,7 @@ const DRIVE_LETTER_REGEX = /^[a-z]:/i
 export default defineConfig({
   plugins: [vue()],
   build: {
-    minify: false, // false to debug
+    // minify: false, // false to debug
     outDir: 'dist',
     emptyOutDir: true,
     copyPublicDir: true,
