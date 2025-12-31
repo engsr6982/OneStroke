@@ -1,27 +1,23 @@
 <template>
   <div class="sidepanel-container">
-    <!-- 顶部操作栏 -->
+    <!-- 操作栏 -->
     <div class="toolbar">
       <el-input
         v-model="searchText"
-        placeholder="搜索历史记录..."
+        placeholder="搜索..."
         prefix-icon="Search"
         clearable
         size="small"
         class="search-input"
       />
       <el-select v-model="filterType" placeholder="类型" size="small" style="width: 80px" clearable>
-        <!-- 生成选项 -->
-        <template v-for="tag in TAGS" :key="tag">
-          <el-option :label="getTagName(tag)" :value="tag" />
-        </template>
+        <el-option v-for="tag in TAGS" :key="tag" :label="getTagName(tag)" :value="tag" />
       </el-select>
     </div>
 
     <!-- 列表区域 -->
     <div class="list-container">
-      <el-empty v-if="filteredList.length === 0" description="暂无相关记录" />
-
+      <el-empty v-if="filteredList.length === 0" description="暂无记录" :image-size="80" />
       <el-scrollbar v-else>
         <div
           v-for="item in filteredList"
@@ -41,44 +37,62 @@
       </el-scrollbar>
     </div>
 
-    <!-- 详情抽屉 (使用 Drawer 展示详细信息) -->
+    <!-- 详情抽屉 -->
     <el-drawer
       v-model="drawerVisible"
       title="记录详情"
       direction="btt"
-      size="80%"
+      size="85%"
       :with-header="false"
       destroy-on-close
+      body-class="no-padding-drawer-body"
     >
-      <div v-if="currentItem" class="detail-container">
-        <div class="detail-header">
-          <h3>{{ getTagName(currentItem.type) }}结果</h3>
-          <div class="actions">
-            <el-button type="primary" link icon="CopyDocument" @click="copyText(currentItem.result)"
-              >复制结果</el-button
-            >
-            <el-button type="danger" link icon="Delete" @click="deleteItem(currentItem.id)"
-              >删除</el-button
-            >
+      <div v-if="currentItem" class="drawer-layout">
+        <!-- 工具 -->
+        <div class="drawer-header">
+          <div class="header-left">
+            <span class="title">{{ getTagName(currentItem.type) }}结果</span>
+            <el-radio-group v-model="activeDetailTab" size="small">
+              <el-radio-button label="result">AI 结果</el-radio-button>
+              <el-radio-button label="original">原文</el-radio-button>
+            </el-radio-group>
+          </div>
+
+          <div class="header-right">
+            <el-button-group size="small">
+              <el-button
+                type="primary"
+                plain
+                icon="CopyDocument"
+                @click="copyText(currentItem.result)"
+              />
+              <el-button type="danger" plain icon="Delete" @click="deleteItem(currentItem.id)" />
+            </el-button-group>
+            <el-button
+              size="small"
+              icon="Close"
+              circle
+              @click="drawerVisible = false"
+              style="margin-left: 8px"
+            />
           </div>
         </div>
 
-        <el-tabs v-model="activeDetailTab">
-          <el-tab-pane label="AI 结果" name="result">
-            <div class="content-box result-box">
-              <!-- TODO: 改进 markdown 渲染 -->
+        <!-- 内容 -->
+        <div class="drawer-content">
+          <!-- 结果页 -->
+          <div v-show="activeDetailTab === 'result'" class="scroll-wrapper">
+            <div class="text-content result-text">
               <pre>{{ currentItem.result }}</pre>
             </div>
-          </el-tab-pane>
-          <el-tab-pane label="原文" name="original">
-            <div class="content-box original-box">
+          </div>
+
+          <!-- 原文页 -->
+          <div v-show="activeDetailTab === 'original'" class="scroll-wrapper">
+            <div class="text-content original-text">
               {{ currentItem.originalText }}
             </div>
-          </el-tab-pane>
-        </el-tabs>
-
-        <div class="detail-footer">
-          <el-button @click="drawerVisible = false" class="w-full">关闭</el-button>
+          </div>
         </div>
       </div>
     </el-drawer>
@@ -107,7 +121,6 @@ const filteredList = computed(() => {
   })
 })
 
-// 加载数据
 const loadHistory = async () => {
   const data = await chrome.storage.local.get('history')
   if (data.history) {
@@ -117,7 +130,6 @@ const loadHistory = async () => {
   }
 }
 
-// 监听数据变化
 const handleStorageChange = (
   changes: { [name: string]: chrome.storage.StorageChange },
   areaName: string,
@@ -155,10 +167,8 @@ const copyText = async (text: string) => {
 const deleteItem = async (id: string) => {
   try {
     await ElMessageBox.confirm('确定要删除这条记录吗？', '提示', { type: 'warning' })
-
     const newHistory = historyList.value.filter((item) => item.id !== id)
     await chrome.storage.local.set({ history: newHistory })
-
     drawerVisible.value = false
     ElMessage.success('已删除')
   } catch (e) {
@@ -180,20 +190,75 @@ const deleteItem = async (id: string) => {
   display: flex;
   gap: 8px;
   border-bottom: 1px solid #eee;
-  background: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.search-input {
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .list-container {
   flex: 1;
+  overflow: hidden; /* 让内部的 el-scrollbar 处理滚动 */
+}
+
+.drawer-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 占满 drawer body 的 100% */
   overflow: hidden;
-  /* 交给 el-scrollbar */
+}
+
+.drawer-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0; /* 防止被压缩 */
+  background: #fff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #303133;
+}
+
+.drawer-content {
+  flex: 1; /* 占据剩余所有空间 */
+  min-height: 0;
+  position: relative;
+  background-color: #f8f9fa;
+}
+
+.scroll-wrapper {
+  height: 100%;
+  overflow-y: auto; /* 原生滚动 */
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* 文本内容样式 */
+.text-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.original-text {
+  color: #606266;
+  font-style: italic;
+}
+
+.result-text pre {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre-wrap;
 }
 
 .history-item {
@@ -202,36 +267,28 @@ const deleteItem = async (id: string) => {
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .history-item:hover {
   background-color: #f5f7fa;
 }
-
 .item-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 6px;
 }
-
 .item-time {
   font-size: 12px;
   color: #909399;
 }
-
 .item-text {
   font-size: 13px;
   color: #303133;
   line-height: 1.4;
   margin-bottom: 4px;
-
-  /* 文本截断 2行 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .item-preview {
   font-size: 12px;
   color: #909399;
@@ -239,43 +296,11 @@ const deleteItem = async (id: string) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+</style>
 
-/* 详情页样式 */
-.detail-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.content-box {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  min-height: 200px;
-  white-space: pre-wrap;
-  /* 保持换行 */
-}
-
-.original-box {
-  color: #606266;
-  font-style: italic;
-}
-
-.detail-footer {
-  margin-top: 5px;
-}
-
-.w-full {
-  width: 100%;
+<style>
+/* 移除 element-plus 的 padding */
+.no-padding-drawer-body .el-drawer__body {
+  padding: 0 !important;
 }
 </style>

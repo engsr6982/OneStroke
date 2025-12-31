@@ -25,7 +25,7 @@ chrome.runtime.onInstalled.addListener(() => {
   })
   chrome.contextMenus.create({
     parentId: 'onestroke_root',
-    id: 'summary',
+    id: 'summarize',
     title: '📝 划词总结',
     contexts: ['selection'],
   })
@@ -50,7 +50,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     parentId: 'onestroke_root',
     id: 'open_sidepanel',
-    title: '📂 打开历史记录面板',
+    title: '📂 历史记录',
     contexts: ['selection', 'page'],
   })
 })
@@ -99,7 +99,7 @@ async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
     const stream = await client.chat.completions.create({
       model: config.model,
       messages: [
-        { role: 'system', content: prompts[type] || '你是我的 AI 助手' },
+        { role: 'system', content: prompts[type] },
         { role: 'user', content: text },
       ],
       stream: true,
