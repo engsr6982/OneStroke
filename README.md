@@ -73,11 +73,11 @@ npm run build
 
 ## 问题记录
 
-1. 由于使用 TypeScript 但是因为没有 Chrome 的类型文件，导致编译代码 TS 报错未知的类型
+### 1. 由于使用 TypeScript 但是因为没有 Chrome 的类型文件，导致编译代码 TS 报错未知的类型
 
 在 Github 上 GoogleChrome 组织下找到了 chrome-types 仓库，npm 安装类型文件后，在 env.d.ts 引入类型文件解决
 
-2. 编写完 content 页面内容后，vite 构建打包，chrome 加载扩展报错:
+### 2. 编写完 content 页面内容后，vite 构建打包，chrome 加载扩展报错:
 
 ```log
 Cannot load extension with file or directory name _plugin-vue_export-helper.js. Filenames starting with "_" are reserved for use by the system.
@@ -91,7 +91,7 @@ https://github.com/vitejs/vite/issues/9119
 
 查看前人的解决方案，重写 `sanitizeFileName` 函数后重新打包，问题解决
 
-3. `Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.` 异常
+### 3. `Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.` 异常
 
 根据报错信息，猜测是 content script 与 background script 之间的通信问题, 调整时序、添加异常处理均无效
 
