@@ -102,20 +102,23 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { HistoryItem } from '../types/storage'
+import type { HistoryItem, PromptTag } from '../types/storage'
 import { formatDate, getTagName, getTagType, TAGS } from '@/helper'
 
 const historyList = ref<HistoryItem[]>([])
 const searchText = ref('')
-const filterType = ref('')
+const filterType = ref<PromptTag | null>(null)
 const drawerVisible = ref(false)
 const currentItem = ref<HistoryItem | null>(null)
 const activeDetailTab = ref('result')
 
 const filteredList = computed(() => {
   return historyList.value.filter((item) => {
+    const text = searchText.value.toLowerCase()
     const matchText =
-      item.originalText.includes(searchText.value) || item.result.includes(searchText.value)
+      (item.originalText || '').toLowerCase().includes(text) ||
+      (item.result || '').toLowerCase().includes(text)
+
     const matchType = filterType.value ? item.type === filterType.value : true
     return matchText && matchType
   })
