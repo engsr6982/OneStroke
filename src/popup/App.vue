@@ -72,6 +72,7 @@
 
         <div v-else class="history-list">
           <div class="history-actions">
+            <el-button type="primary" link size="small" @click="showSidePanel">查看全部</el-button>
             <el-button type="danger" link size="small" @click="clearHistory">清空历史</el-button>
           </div>
 
@@ -188,6 +189,16 @@ const clearHistory = async () => {
     await chrome.storage.local.remove('history')
     ElMessage.success('历史记录已清空')
   }
+}
+
+const showSidePanel = async () => {
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  })
+
+  if (!tab?.id) return
+  await chrome.sidePanel.open({ tabId: tab.id })
 }
 </script>
 
