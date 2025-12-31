@@ -26,6 +26,51 @@
 4. Prettier: 代码格式化工具统一项目代码风格
 5. ESLint: 代码检查工具，统一代码风格，提高代码质量
 
+## 使用
+
+1. 从 Release 下载最新的构建包
+2. 解压后，将文件夹重命名为 `OneStroke`
+3. 打开 Chrome 浏览器的扩展程序页面，打开 `开发者模式`
+4. 点击 `加载已解压的扩展程序` 按钮，选择 `OneStroke` 文件夹
+5. 点击 OneStroke 扩展，配置模型和 API Key
+6. 任意页面划词，右键菜单选择 `OneStroke`，即可生成摘要、笔记、解析结果
+
+## 构建
+
+```bash
+# 安装依赖
+npm install
+
+# 构建项目
+npm run build
+```
+
+## 项目结构
+
+```bash
+.
+├─public/ # 静态资源
+│      manifest.json
+│      popup.html
+├─src/
+│    │  background.ts # 后台脚本
+│    │
+│    ├─content/ # 内容脚本(悬浮窗)
+│    │      App.vue
+│    │      content.ts
+│    │      loader.ts
+│    │
+│    ├─popup/ # 弹窗脚本
+│    │      App.vue
+│    │      main.ts
+│    │
+│    └─types/ # 类型定义
+│           message.ts
+│           storage.ts
+|
+└─ ... # 其它文件(项目配置、脚本等)
+```
+
 ## 问题记录
 
 1. 由于使用 TypeScript 但是因为没有 Chrome 的类型文件，导致编译代码 TS 报错未知的类型
@@ -54,6 +99,6 @@ https://github.com/vitejs/vite/issues/9119
 
 但是 Vite 打包时, 因为 content.ts 和 popup.ts 都引用了 Vue，Vite 自动进行了“代码分割”，生成共享的 Chunk 文件（plugin-vueexport-helper.js），导致 content.js 变成了包含 import 语法的 ESM 模块，从而报错。
 
-> 在扩展的选项 "错误" 卡里, 有另一条报错：`Uncaught SyntaxError: Cannot use import statement outside a module`
+> 在扩展的 **错误** 选项卡里, 有另一条报错：`Uncaught SyntaxError: Cannot use import statement outside a module`
 
 解决方案：使用一个空壳文件动态 import 真正的 content.js
