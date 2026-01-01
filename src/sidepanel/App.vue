@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { Clock, Comment, Delete, Download, Brush, Lightning } from '@element-plus/icons-vue'
+import { Delete, Download, Brush, Lightning } from '@element-plus/icons-vue'
 import ChatView from './view/ChatView.vue'
 import HistoryView from './view/HistoryView.vue'
 import { getTagName, TAGS } from '@/helper'
@@ -39,21 +39,10 @@ const handleClearContext = () => {
     <!-- 顶部导航栏 -->
     <div class="nav-header">
       <div class="nav-switch">
-        <el-segmented
-          v-model="activeTab"
-          :options="[
-            { label: '历史', value: 'history', icon: Clock },
-            { label: '对话', value: 'chat', icon: Comment },
-          ]"
-          size="small"
-        >
-          <template #default="{ item }">
-            <div class="segment-item">
-              <el-icon><component :is="item.icon" /></el-icon>
-              <span>{{ item.label }}</span>
-            </div>
-          </template>
-        </el-segmented>
+        <el-radio-group v-model="activeTab" size="small">
+          <el-radio-button label="history">历史</el-radio-button>
+          <el-radio-button label="chat">对话</el-radio-button>
+        </el-radio-group>
       </div>
 
       <!-- 工具栏 -->
@@ -142,11 +131,9 @@ const handleClearContext = () => {
 /* 切换视图 */
 .nav-switch {
   flex-shrink: 0;
-}
-.segment-item {
-  display: flex;
   align-items: center;
-  gap: 4px; /* icon 和文本之间的间距 */
+  height: 100%;
+  display: inline-flex;
 }
 
 /* 右侧工具栏 */
