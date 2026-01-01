@@ -6,7 +6,7 @@ export default defineManifest({
   version: '0.1.0',
   description: 'AI 划词总结 / AI 划词笔记 / AI 划词解析',
 
-  permissions: ['storage', 'contextMenus', 'activeTab', 'sidePanel'],
+  permissions: ['storage', 'contextMenus', 'activeTab', 'sidePanel', 'unlimitedStorage'],
 
   host_permissions: [
     'https://*.openai.com/*',
