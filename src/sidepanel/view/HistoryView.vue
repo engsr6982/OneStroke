@@ -23,9 +23,6 @@
         </div>
       </el-scrollbar>
     </div>
-
-    <!-- 详情抽屉 -->
-    <DetailDrawer ref="drawer" :meta="showMeta" />
   </div>
 </template>
 
@@ -39,17 +36,17 @@ import {
   getTagRenderType,
   SessionMetaRefsKey,
 } from '@/helper'
-import DetailDrawer from './components/DetailDrawer.vue'
 
 const props = defineProps<{
   serachKeyword: string
   filterTag?: PromptKeys | null
 }>()
 
-const sessionMetas = ref<SessionMetas>([])
+const emits = defineEmits<{
+  selectHistory: [meta: SessionMeta]
+}>()
 
-const drawer = ref<InstanceType<typeof DetailDrawer>>()
-const showMeta = ref<SessionMeta | null>(null)
+const sessionMetas = ref<SessionMetas>([])
 
 const filteredList = computed(() => {
   return sessionMetas.value.filter((item) => {
@@ -82,15 +79,7 @@ onUnmounted(() => {
   chrome.storage.onChanged.removeListener(handleStorageChange)
 })
 
-const showDetail = (item: SessionMeta) => {
-  if (item.type === 'chat') {
-    // TODO: 跳转到聊天页面
-    console.log('TODO: 跳转到聊天页面', item)
-    return
-  }
-  showMeta.value = item
-  drawer.value?.show()
-}
+const showDetail = (item: SessionMeta) => emits('selectHistory', item)
 </script>
 
 <style scoped>

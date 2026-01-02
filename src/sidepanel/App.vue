@@ -5,9 +5,14 @@ import ChatView from './view/ChatView.vue'
 import HistoryView from './view/HistoryView.vue'
 import { clearAllSessions, getTagRenderName, SessionTypes } from '@/helper'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import DetailDrawer from './components/DetailDrawer.vue'
+import type { SessionMeta } from '@/types/storage'
 
 type Tab = 'history' | 'chat'
 const activeTab = ref<Tab>('history')
+const detailDrawer = ref<InstanceType<typeof DetailDrawer>>()
+const detailDrawerMeta = ref<SessionMeta | null>(null)
+
 const historyProps = reactive({
   serachKeyword: '',
   filterTag: null,
@@ -38,6 +43,11 @@ const handleExportChat = () => {
 }
 const handleClearContext = () => {
   // TODO: 清理上下文
+}
+
+const handleSelectHistory = (meta: SessionMeta) => {
+  detailDrawerMeta.value = meta
+  detailDrawer.value?.show()
 }
 </script>
 
@@ -114,9 +124,15 @@ const handleClearContext = () => {
 
     <div class="content-area">
       <KeepAlive>
-        <component :is="currentView" v-bind="currentViewProps" />
+        <component
+          :is="currentView"
+          v-bind="currentViewProps"
+          @selectHistory="handleSelectHistory"
+        />
       </KeepAlive>
     </div>
+
+    <detail-drawer ref="detailDrawer" :meta="detailDrawerMeta" />
   </div>
 </template>
 
