@@ -5,7 +5,7 @@
       <el-empty description="请从历史记录选择或开始新会话" />
     </div>
     <el-scrollbar v-else view-class="message-list">
-      <div v-for="(msg, index) in sessionData.messages" :key="index" class="message-block">
+      <div v-for="(msg, index) in renderMessages" :key="index" class="message-block">
         <!-- User 消息样式 -->
         <template v-if="msg.role === 'user'">
           <div class="role-label">
@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, computed } from 'vue'
 import { User, Service, Promotion, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElScrollbar } from 'element-plus'
 import OpenAI from 'openai'
@@ -122,6 +122,10 @@ const pendingContexts = ref<MessageContext[]>([]) // 待发送的引用
 const isStreaming = ref(false)
 const messageListRef = ref<InstanceType<typeof ElScrollbar> | null>(null)
 
+const renderMessages = computed(() => {
+  return sessionData.value?.messages.filter((i) => i.role !== 'system') // 过滤掉 system 消息
+})
+
 // ================= 对外接口 =================
 
 defineExpose({
@@ -133,7 +137,7 @@ defineExpose({
 // 格式化 Tag 显示 (前10个字符 + 省略号)
 const formatContextPreview = (text: string) => {
   const clean = text.replace(/\s+/g, ' ').trim()
-  return clean.length > 10 ? `[${clean.substring(0, 10)}...]` : `[${clean}]`
+  return clean.length > 10 ? `${clean.substring(0, 10)}...` : `${clean}`
 }
 
 const scrollToBottom = async () => {
