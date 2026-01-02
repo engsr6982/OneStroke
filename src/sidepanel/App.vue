@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { Delete, Download, Brush, Lightning } from '@element-plus/icons-vue'
+import { Delete, Brush, Lightning } from '@element-plus/icons-vue'
 import ChatView from './view/ChatView.vue'
 import HistoryView from './view/HistoryView.vue'
-import { clearAllSessions, getTagRenderName, SessionTypes } from '@/helper'
+import { clearAllSessions, deleteSession, getTagRenderName, SessionTypes } from '@/helper'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import DetailDrawer from './components/DetailDrawer.vue'
 import type { SessionID, SessionMeta } from '@/types/storage'
@@ -25,6 +25,7 @@ const chatModel = reactive({
 })
 
 const currentTokenUsage = computed(() => `${totalTokens.value} tokens`)
+const canDelteChat = computed(() => chatModel.sessionId != null)
 
 const handleClearHistory = async () => {
   try {
@@ -53,8 +54,16 @@ const handleSelectHistory = (meta: SessionMeta) => {
   detailDrawer.value?.show()
 }
 
-const handleExportChat = () => {
-  // TODO: 导出对话
+const handleDeleteChat = async () => {
+  try {
+    await ElMessageBox.confirm('确定删除该对话吗？', '提示', { type: 'warning' })
+    deleteSession(chatModel.sessionId!)
+    chatModel.sessionId = null
+    totalTokens.value = 0
+    ElMessage.success('删除成功')
+  } catch (e) {
+    void e // ignore
+  }
 }
 const handleClearContext = () => {
   const val = chatView.value?.isStreaming()
@@ -133,8 +142,14 @@ const handleTokenUpdate = (tokens: number): void => {
               <el-button link :icon="Brush" @click="handleClearContext" />
             </el-tooltip>
 
-            <el-tooltip content="导出 Markdown" placement="bottom-end">
-              <el-button link :icon="Download" @click="handleExportChat" />
+            <el-tooltip content="删除对话" placement="bottom-end">
+              <el-button
+                type="danger"
+                link
+                :icon="Delete"
+                @click="handleDeleteChat"
+                :disabled="canDelteChat"
+              />
             </el-tooltip>
           </div>
         </Transition>
