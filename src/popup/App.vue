@@ -71,22 +71,34 @@
           </div>
         </el-form>
       </el-tab-pane>
+
+      <!-- 3. 调试面板 -->
+      <el-tab-pane v-if="isDev" label="调试面板" name="debug">
+        <el-button type="primary" class="w-full" @click="generateTestData()"
+          >生成模拟数据</el-button
+        >
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ModelProviderTemplate } from '../types/storage'
 import type { ModelConfig, PromptConfig } from '../types/storage'
 import { DEFAULT_CONFIG, DEFAULT_PROMPTS } from '@/types/constant'
 import { getModelAndPromptConfig, setModelConfig, setPromptConfig } from '@/helper'
+import { generateTestData } from '@/test_debug'
 
 const activeTab = ref('model')
 const saving = ref(false)
 const modelConfig = reactive<ModelConfig>({ ...DEFAULT_CONFIG })
 const promptConfig = reactive<PromptConfig>({ ...DEFAULT_PROMPTS })
+
+const isDev = computed(() => {
+  return import.meta.env.DEV === true
+})
 
 onMounted(async () => {
   const config = await getModelAndPromptConfig()
