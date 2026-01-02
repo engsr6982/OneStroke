@@ -1,50 +1,47 @@
 <template>
   <div class="chat-container">
     <!-- 聊天历史 -->
-    <div class="message-list" ref="messageListRef">
-      <div v-if="!sessionData" class="empty-state">
-        <el-empty description="请从历史记录选择或开始新会话" />
-      </div>
-
-      <el-scrollbar v-else>
-        <div v-for="(msg, index) in sessionData.messages" :key="index" class="message-block">
-          <!-- User 消息样式 -->
-          <template v-if="msg.role === 'user'">
-            <div class="role-label">
-              <el-icon><User /></el-icon> You
-            </div>
-            <!-- 如果有上下文引用，先渲染引用 -->
-            <div v-if="msg.context && msg.context.length > 0" class="message-refs">
-              <el-tag
-                v-for="(ctx, cIdx) in msg.context"
-                :key="cIdx"
-                type="info"
-                size="small"
-                effect="plain"
-                class="ref-tag"
-              >
-                {{ formatContextPreview(ctx.text) }}
-              </el-tag>
-            </div>
-            <div class="message-content">{{ msg.content }}</div>
-          </template>
-
-          <!-- AI 消息 -->
-          <template v-else-if="msg.role === 'assistant'">
-            <div class="role-label ai-label">
-              <el-icon><Service /></el-icon> AI
-            </div>
-            <div class="message-content">
-              <!-- TODO: markdown 渲染 -->
-              {{ msg.content }}
-              <span v-if="isStreaming && index === sessionData.messages.length - 1" class="cursor"
-                >|</span
-              >
-            </div>
-          </template>
-        </div>
-      </el-scrollbar>
+    <div v-if="!sessionData" class="empty-state">
+      <el-empty description="请从历史记录选择或开始新会话" />
     </div>
+    <el-scrollbar v-else view-class="message-list">
+      <div v-for="(msg, index) in sessionData.messages" :key="index" class="message-block">
+        <!-- User 消息样式 -->
+        <template v-if="msg.role === 'user'">
+          <div class="role-label">
+            <el-icon><User /></el-icon> You
+          </div>
+          <!-- 如果有上下文引用，先渲染引用 -->
+          <div v-if="msg.context && msg.context.length > 0" class="message-refs">
+            <el-tag
+              v-for="(ctx, cIdx) in msg.context"
+              :key="cIdx"
+              type="info"
+              size="small"
+              effect="plain"
+              class="ref-tag"
+            >
+              {{ formatContextPreview(ctx.text) }}
+            </el-tag>
+          </div>
+          <div class="message-content">{{ msg.content }}</div>
+        </template>
+
+        <!-- AI 消息 -->
+        <template v-else>
+          <div class="role-label ai-label">
+            <el-icon><Service /></el-icon> AI
+          </div>
+          <div class="message-content">
+            <!-- TODO: markdown 渲染 -->
+            {{ msg.content }}
+            <span v-if="isStreaming && index === sessionData.messages.length - 1" class="cursor"
+              >|</span
+            >
+          </div>
+        </template>
+      </div>
+    </el-scrollbar>
 
     <!-- 底部输入区域 -->
     <div class="input-area" v-loading="isStreaming">
@@ -96,7 +93,7 @@
 <script setup lang="ts">
 import { ref, nextTick, watch } from 'vue'
 import { User, Service, Promotion, Plus } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElScrollbar } from 'element-plus'
 import OpenAI from 'openai'
 import { getSession, updateSession, getModelAndPromptConfig, deepCopy } from '@/helper'
 import type { SessionData, SessionID, MessageContext, ChatMessage } from '@/types/storage'
@@ -123,7 +120,7 @@ const sessionData = ref<SessionData | null>(null)
 const inputText = ref('')
 const pendingContexts = ref<MessageContext[]>([]) // 待发送的引用
 const isStreaming = ref(false)
-const messageListRef = ref<HTMLElement | null>(null)
+const messageListRef = ref<InstanceType<typeof ElScrollbar> | null>(null)
 
 // ================= 对外接口 =================
 
@@ -141,8 +138,9 @@ const formatContextPreview = (text: string) => {
 
 const scrollToBottom = async () => {
   await nextTick()
-  if (messageListRef.value) {
-    messageListRef.value.scrollTop = messageListRef.value.scrollHeight
+  const wrap = messageListRef.value?.wrapRef
+  if (wrap) {
+    messageListRef.value?.setScrollTop(wrap.scrollHeight)
   }
 }
 
@@ -224,8 +222,9 @@ const tryAddChatSystemPrompt = (session: SessionData) => {
 `
   session.messages.push({
     role: 'system',
-    content: prompt,
+    content: prompt.trim(),
   })
+  session.addedChatSystemPrompt = true
 }
 
 const tryCreateNewSession = async () => {
@@ -242,7 +241,7 @@ const tryCreateNewSession = async () => {
 }
 
 const buildCurrentMessage = (): ChatMessage => {
-  const currentText = inputText.value
+  const currentText = inputText.value.trim()
   const currentContexts = [...pendingContexts.value]
   return {
     role: 'user',
@@ -356,7 +355,7 @@ const handleSend = async () => {
 }
 
 /* --- 消息列表区域 --- */
-.message-list {
+:deep(.message-list) {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
