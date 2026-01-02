@@ -6,28 +6,25 @@ import HistoryView from './view/HistoryView.vue'
 import { clearAllSessions, getTagRenderName, SessionTypes } from '@/helper'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import DetailDrawer from './components/DetailDrawer.vue'
-import type { SessionMeta } from '@/types/storage'
+import type { SessionID, SessionMeta } from '@/types/storage'
 
 type Tab = 'history' | 'chat'
 const activeTab = ref<Tab>('history')
 const detailDrawer = ref<InstanceType<typeof DetailDrawer>>()
 const detailDrawerMeta = ref<SessionMeta | null>(null)
+const totalTokens = ref(0)
+
+const chatView = ref<InstanceType<typeof ChatView>>()
 
 const historyProps = reactive({
   serachKeyword: '',
   filterTag: null,
 })
 const chatModel = reactive({
-  tokenUsage: '0',
+  sessionId: null as SessionID | null,
 })
 
-const currentView = computed(() => {
-  return activeTab.value === 'history' ? HistoryView : ChatView
-})
-const currentViewProps = computed(() => {
-  return activeTab.value === 'history' ? historyProps : {}
-})
-const currentTokenUsage = computed(() => `${chatModel.tokenUsage} tokens`)
+const currentTokenUsage = computed(() => `${totalTokens.value} tokens`)
 
 const handleClearHistory = async () => {
   try {
@@ -38,16 +35,38 @@ const handleClearHistory = async () => {
     void e // ignore
   }
 }
+
+const handleSelectHistory = (meta: SessionMeta) => {
+  if (meta.type === 'chat') {
+    activeTab.value = 'chat'
+    if (chatModel.sessionId === meta.id) {
+      return
+    }
+    if (chatView.value?.isStreaming()) {
+      ElMessage.error('当前对话中存在未完成的任务')
+      return
+    }
+    chatModel.sessionId = meta.id
+    return
+  }
+  detailDrawerMeta.value = meta
+  detailDrawer.value?.show()
+}
+
 const handleExportChat = () => {
   // TODO: 导出对话
 }
 const handleClearContext = () => {
-  // TODO: 清理上下文
+  const val = chatView.value?.isStreaming()
+  if (val) {
+    ElMessage.error('当前对话中存在未完成的任务')
+    return
+  }
+  totalTokens.value = 0
+  chatModel.sessionId = crypto.randomUUID()
 }
-
-const handleSelectHistory = (meta: SessionMeta) => {
-  detailDrawerMeta.value = meta
-  detailDrawer.value?.show()
+const handleTokenUpdate = (tokens: number): void => {
+  totalTokens.value = tokens
 }
 </script>
 
@@ -124,11 +143,12 @@ const handleSelectHistory = (meta: SessionMeta) => {
 
     <div class="content-area">
       <KeepAlive>
-        <component
-          :is="currentView"
-          v-bind="currentViewProps"
+        <history-view
+          v-if="activeTab === 'history'"
+          v-bind="historyProps"
           @selectHistory="handleSelectHistory"
         />
+        <chat-view v-else ref="chatView" v-model="chatModel" @token-update="handleTokenUpdate" />
       </KeepAlive>
     </div>
 

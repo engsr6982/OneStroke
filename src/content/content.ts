@@ -50,6 +50,11 @@ chrome.runtime.onMessage.addListener((message: AppMessage, sender, sendResponse)
       sendResponse('PONG')
       return false
     }
+    if (message.action === 'GET_SELECTION') {
+      const selection = window.getSelection()?.toString() ?? ''
+      sendResponse({ text: selection })
+      return false
+    }
 
     if (message.action === 'OPEN_WINDOW') {
       initUI()

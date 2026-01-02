@@ -1,6 +1,12 @@
 import type { PromptKeys } from './storage'
 
-export type MessageType = 'PING' | 'OPEN_WINDOW' | 'STREAM_CHUNK' | 'STREAM_END' | 'ERROR'
+export type MessageType =
+  | 'PING'
+  | 'OPEN_WINDOW'
+  | 'STREAM_CHUNK'
+  | 'STREAM_END'
+  | 'ERROR'
+  | 'GET_SELECTION'
 
 export interface BaseMessage {
   action: MessageType
@@ -29,9 +35,14 @@ export interface ErrorMessage extends BaseMessage {
   message: string
 }
 
+export interface GetSelectionMessage extends BaseMessage {
+  action: 'GET_SELECTION'
+}
+
 export type AppMessage =
   | PingMessage
   | OpenWindowMessage
   | StreamChunkMessage
   | StreamEndMessage
   | ErrorMessage
+  | GetSelectionMessage

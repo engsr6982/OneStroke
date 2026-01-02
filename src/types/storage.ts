@@ -59,6 +59,7 @@ export interface SessionData {
   type: SessionType // 会话类型
   messages: ChatMessage[] // 消息列表
   totalToken: number // 总token数
+  addedChatSystemPrompt?: boolean // 是否添加了聊天系统提示词
 }
 
 export interface SessionMeta {
