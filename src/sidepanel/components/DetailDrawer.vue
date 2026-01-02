@@ -145,7 +145,7 @@ const deleteItem = async (id: SessionID) => {
 }
 
 .drawer-header {
-  padding: 12px 16px;
+  padding: 12px 0;
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
