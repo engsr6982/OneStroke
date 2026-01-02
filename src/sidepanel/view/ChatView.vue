@@ -362,10 +362,10 @@ const handleSend = async () => {
 :deep(.message-list) {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
-  gap: 24px; /* 消息块之间的间距 */
+  gap: 6px; /* 消息块之间的间距 */
 }
 
 .empty-state {
@@ -381,6 +381,13 @@ const handleSend = async () => {
   gap: 6px;
   max-width: 100%;
   overflow: hidden; /* 防止消息内容溢出 */
+  padding: 8px;
+  border: 1px solid transparent; /* 默认透明，避免抖动 */
+  border-radius: 8px;
+  transition: border-color 0.3s ease; /* 平滑过渡 */
+}
+.message-block:hover {
+  border: 1px solid #e4e7ed;
 }
 
 .role-label {
