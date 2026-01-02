@@ -235,8 +235,11 @@ const tryCreateNewSession = async () => {
   if (sessionData.value) {
     return
   }
+  if (!model.value?.sessionId) {
+    model.value!.sessionId = crypto.randomUUID()
+  }
   sessionData.value = {
-    id: model.value?.sessionId ?? crypto.randomUUID(),
+    id: model.value?.sessionId as string,
     type: 'chat',
     messages: [{ role: 'system', content: '你是一个智能助手，可以与用户进行自然、连续的对话。' }],
     totalToken: 0,
