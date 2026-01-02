@@ -19,18 +19,18 @@
 </template>
 
 <script setup lang="ts">
-import { getTagName } from '@/helper'
-import type { PromptTag } from '@/types/storage'
+import { getTagRenderName } from '@/helper'
+import type { PromptKeys } from '@/types/storage'
 import { ref, computed, onBeforeUnmount } from 'vue'
 
 const visible = ref(false)
 const loading = ref(false)
 const result = ref('')
-const currentType = ref<PromptTag | null>(null)
+const currentType = ref<PromptKeys | null>(null)
 const windowRef = ref<HTMLElement | null>(null)
 
 const title = computed(() => {
-  return getTagName(currentType?.value as PromptTag)
+  return getTagRenderName(currentType?.value as PromptKeys)
 })
 
 // TODO: 改进 Markdown 渲染
@@ -85,7 +85,7 @@ function handleMouseMove(event: MouseEvent) {
 }
 onBeforeUnmount(() => removeListener())
 
-const open = (type: PromptTag, clientX: number, clientY: number) => {
+const open = (type: PromptKeys, clientX: number, clientY: number) => {
   currentType.value = type
   result.value = ''
   loading.value = true

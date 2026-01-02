@@ -1,6 +1,8 @@
 import OpenAI from 'openai'
-import { DEFAULT_CONFIG, DEFAULT_PROMPTS, type HistoryItem, type PromptTag } from './types/storage'
+import { type PromptKeys, type SessionData } from './types/storage'
 import type { AppMessage } from './types/message'
+import { DEFAULT_CONFIG, DEFAULT_PROMPTS } from './types/constant'
+import { appendSession, getModelAndPromptConfig } from './helper'
 
 async function sendMessageToTab(tabId: number, message: AppMessage) {
   try {
@@ -65,7 +67,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 
   if (!info.selectionText) return
-  const type = info.menuItemId as PromptTag
+  const type = info.menuItemId as PromptKeys
 
   console.log(`Menu clicked: ${type}`)
 
@@ -78,11 +80,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 })
 
-async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
+async function handleAiRequest(tabId: number, type: PromptKeys, text: string) {
   try {
-    const settings = await chrome.storage.sync.get(['config', 'prompts'])
-    const config = settings.config || DEFAULT_CONFIG
-    const prompts = settings.prompts || DEFAULT_PROMPTS
+    const settings = await getModelAndPromptConfig()
+    const config = settings.modelConfig || DEFAULT_CONFIG
+    const prompts = settings.promptConfig || DEFAULT_PROMPTS
 
     if (!config.apiKey) {
       await sendMessageToTab(tabId, { action: 'STREAM_CHUNK', content: '❌ 请先配置 API Key' })
@@ -104,11 +106,15 @@ async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
       ],
       stream: true,
       temperature: 0.7,
+      stream_options: {
+        include_usage: true,
+      },
     })
 
     console.log('AI Stream started')
 
     let fullResult = ''
+    let totalToken = 0
 
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || ''
@@ -116,13 +122,36 @@ async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
         fullResult += content
         await sendMessageToTab(tabId, { action: 'STREAM_CHUNK', content })
       }
+      const totalt = chunk.usage?.total_tokens || 0
+      if (totalt) {
+        totalToken = totalt
+      }
     }
 
     console.log('AI Stream finished')
     await sendMessageToTab(tabId, { action: 'STREAM_END' })
 
     if (fullResult.trim()) {
-      await saveHistory(type, text, fullResult)
+      const data: SessionData = {
+        id: crypto.randomUUID(),
+        type: type,
+        totalToken: totalToken,
+        messages: [
+          {
+            role: 'system',
+            content: prompts[type],
+          },
+          {
+            role: 'user',
+            content: text,
+          },
+          {
+            role: 'assistant',
+            content: fullResult,
+          },
+        ],
+      }
+      await appendSession(data)
     }
   } catch (error) {
     console.error('AI Request Error', error)
@@ -131,28 +160,5 @@ async function handleAiRequest(tabId: number, type: PromptTag, text: string) {
       content: `\n\n❌ Error: ${error}`,
     })
     await sendMessageToTab(tabId, { action: 'STREAM_END' })
-  }
-}
-
-async function saveHistory(type: PromptTag, original: string, result: string) {
-  try {
-    const data = await chrome.storage.local.get('history')
-    const history: HistoryItem[] = data.history || []
-
-    const newItem: HistoryItem = {
-      id: crypto.randomUUID(),
-      type,
-      originalText: original,
-      result,
-      timestamp: Date.now(),
-    }
-
-    // 新的在最前，只存最近 50 条
-    const newHistory = [newItem, ...history].slice(0, 50)
-
-    await chrome.storage.local.set({ history: newHistory })
-    console.log('History saved, total items:', newHistory.length)
-  } catch (e) {
-    console.error('Failed to save history', e)
   }
 }

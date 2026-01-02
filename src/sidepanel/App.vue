@@ -3,7 +3,8 @@ import { computed, reactive, ref } from 'vue'
 import { Delete, Download, Brush, Lightning } from '@element-plus/icons-vue'
 import ChatView from './view/ChatView.vue'
 import HistoryView from './view/HistoryView.vue'
-import { getTagName, TAGS } from '@/helper'
+import { clearAllSessions, getTagRenderName, SessionTypes } from '@/helper'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 type Tab = 'history' | 'chat'
 const activeTab = ref<Tab>('history')
@@ -21,10 +22,16 @@ const currentView = computed(() => {
 const currentViewProps = computed(() => {
   return activeTab.value === 'history' ? historyProps : {}
 })
-const currentTokenUsage = computed(() => `${chatModel.tokenUsage}k`)
+const currentTokenUsage = computed(() => `${chatModel.tokenUsage} tokens`)
 
-const handleClearHistory = () => {
-  // TODO: 清理历史记录
+const handleClearHistory = async () => {
+  try {
+    await ElMessageBox.confirm('确定清空所有历史记录吗？', '提示', { type: 'warning' })
+    await clearAllSessions()
+    ElMessage.success('清空成功')
+  } catch (e) {
+    void e // ignore
+  }
 }
 const handleExportChat = () => {
   // TODO: 导出对话
@@ -40,8 +47,8 @@ const handleClearContext = () => {
     <div class="nav-header">
       <div class="nav-switch">
         <el-radio-group v-model="activeTab" size="small">
-          <el-radio-button label="history">历史</el-radio-button>
-          <el-radio-button label="chat">对话</el-radio-button>
+          <el-radio-button value="history">历史</el-radio-button>
+          <el-radio-button value="chat">对话</el-radio-button>
         </el-radio-group>
       </div>
 
@@ -68,7 +75,12 @@ const handleClearContext = () => {
               style="min-width: 60px; max-width: 60px"
               clearable
             >
-              <el-option v-for="tag in TAGS" :key="tag" :label="getTagName(tag)" :value="tag" />
+              <el-option
+                v-for="tag in SessionTypes"
+                :key="tag"
+                :label="getTagRenderName(tag)"
+                :value="tag"
+              />
             </el-select>
 
             <!-- 清理 -->
