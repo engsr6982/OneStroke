@@ -1,28 +1,25 @@
 <template>
-  <div class="sidepanel-container">
-    <!-- 列表区域 -->
-    <div class="list-container">
-      <el-empty v-if="filteredList.length === 0" description="暂无记录" :image-size="80" />
-      <el-scrollbar v-else>
-        <div
-          v-for="item in filteredList"
-          :key="item.id"
-          class="history-item"
-          @click="showDetail(item)"
-        >
-          <div class="item-header">
-            <div class="item-header-lf-group">
-              <el-tag size="small" :type="getTagRenderType(item.type)" effect="dark">{{
-                getTagRenderName(item.type)
-              }}</el-tag>
-              <div class="item-header-lf-title">{{ item.title }}</div>
-            </div>
-            <span class="item-header-rh-time">{{ formatDate(item.updatedAt) }}</span>
+  <div class="list-container">
+    <el-empty v-if="filteredList.length === 0" description="暂无记录" :image-size="80" />
+    <el-scrollbar v-else>
+      <div
+        v-for="item in filteredList"
+        :key="item.id"
+        class="history-item"
+        @click="showDetail(item)"
+      >
+        <div class="item-header">
+          <div class="item-header-lf-group">
+            <el-tag size="small" :type="getTagRenderType(item.type)" effect="dark">{{
+              getTagRenderName(item.type)
+            }}</el-tag>
+            <div class="item-header-lf-title">{{ item.title }}</div>
           </div>
-          <div class="item-preview">{{ item.preview }}...</div>
+          <span class="item-header-rh-time">{{ formatDate(item.updatedAt) }}</span>
         </div>
-      </el-scrollbar>
-    </div>
+        <div class="item-preview">{{ item.preview }}...</div>
+      </div>
+    </el-scrollbar>
   </div>
 </template>
 
@@ -83,16 +80,10 @@ const showDetail = (item: SessionMeta) => emits('selectHistory', item)
 </script>
 
 <style scoped>
-.sidepanel-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background-color: #fff;
-}
-
 .list-container {
   flex: 1;
   overflow: hidden; /* 让内部的 el-scrollbar 处理滚动 */
+  height: 100%;
 }
 
 .history-item {
