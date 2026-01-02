@@ -148,7 +148,7 @@ const handleTokenUpdate = (tokens: number): void => {
                 link
                 :icon="Delete"
                 @click="handleDeleteChat"
-                :disabled="canDelteChat"
+                :disabled="!canDelteChat"
               />
             </el-tooltip>
           </div>
