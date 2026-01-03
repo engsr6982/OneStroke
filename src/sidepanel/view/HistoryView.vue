@@ -18,6 +18,7 @@
           <span class="item-header-rh-time">{{ formatDate(item.updatedAt) }}</span>
         </div>
         <div class="item-preview">{{ item.preview }}...</div>
+        <div v-if="isDev">{{ item.id }}</div>
       </div>
     </el-scrollbar>
   </div>
@@ -44,6 +45,10 @@ const emits = defineEmits<{
 }>()
 
 const sessionMetas = ref<SessionMetas>([])
+
+const isDev = computed(() => {
+  return import.meta.env.DEV
+})
 
 const filteredList = computed(() => {
   return sessionMetas.value.filter((item) => {

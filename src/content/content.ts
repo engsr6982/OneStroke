@@ -1,12 +1,14 @@
 import ContentApp from './ContentApp.ce.vue'
 import type { AppMessage } from '../types/message'
-import { createVueApp } from '@/helper'
 import elementPlusCss from 'element-plus/dist/index.css?inline'
+import { createApp } from 'vue'
 
 const log = (msg: string, ...args: unknown[]) =>
   console.log(`%c[OneStroke Content] ${msg}`, 'color: #409eff; font-weight: bold;', ...args)
 
 const containerId = 'onestroke-container-root'
+
+const app = createApp(ContentApp) // vue app instance
 let appInstance: InstanceType<typeof ContentApp> | null = null
 let lastMouseX = 0
 let lastMouseY = 0
@@ -39,7 +41,7 @@ function initUI() {
   const mountPoint = document.createElement('div')
   shadowRoot.appendChild(mountPoint)
 
-  appInstance = createVueApp(ContentApp, mountPoint, false) as InstanceType<typeof ContentApp>
+  appInstance = app.mount(mountPoint) as InstanceType<typeof ContentApp>
 
   log('UI Initialized')
 }

@@ -1,31 +1,30 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { Delete, Brush, Lightning } from '@element-plus/icons-vue'
+import { Delete, CirclePlus, Lightning } from '@element-plus/icons-vue'
 import ChatView from './view/ChatView.vue'
 import HistoryView from './view/HistoryView.vue'
 import { clearAllSessions, deleteSession, getTagRenderName, SessionTypes } from '@/helper'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import DetailDrawer from './components/DetailDrawer.vue'
-import type { SessionID, SessionMeta } from '@/types/storage'
+import type { SessionMeta } from '@/types/storage'
+import { useChatStore } from './stores/chat'
 
 type Tab = 'history' | 'chat'
 const activeTab = ref<Tab>('history')
 const detailDrawer = ref<InstanceType<typeof DetailDrawer>>()
 const detailDrawerMeta = ref<SessionMeta | null>(null)
-const totalTokens = ref(0)
 
-const chatView = ref<InstanceType<typeof ChatView>>()
+const chatStore = useChatStore()
 
 const historyProps = reactive({
   serachKeyword: '',
   filterTag: null,
 })
-const chatModel = reactive({
-  sessionId: null as SessionID | null,
-})
 
-const currentTokenUsage = computed(() => `${totalTokens.value} tokens`)
-const canDelteChat = computed(() => chatModel.sessionId != null)
+const currentTokenUsage = computed(() => `${chatStore.sessionData?.totalToken ?? 0} tokens`)
+const isChatDeleteBtnDisabled = computed(() => {
+  return chatStore.isStreaming || chatStore.sessionId === null
+})
 
 const handleClearHistory = async () => {
   try {
@@ -38,16 +37,17 @@ const handleClearHistory = async () => {
 }
 
 const handleSelectHistory = (meta: SessionMeta) => {
+  console.debug('handleSelectHistory', meta)
   if (meta.type === 'chat') {
     activeTab.value = 'chat'
-    if (chatModel.sessionId === meta.id) {
+    if (chatStore.sessionId === meta.id) {
       return
     }
-    if (chatView.value?.isStreaming()) {
+    if (chatStore.isStreaming) {
       ElMessage.error('当前对话中存在未完成的任务')
       return
     }
-    chatModel.sessionId = meta.id
+    chatStore.switchSession(meta.id)
     return
   }
   detailDrawerMeta.value = meta
@@ -56,26 +56,27 @@ const handleSelectHistory = (meta: SessionMeta) => {
 
 const handleDeleteChat = async () => {
   try {
+    if (chatStore.isStreaming) {
+      ElMessage.error('当前对话中存在未完成的任务')
+      return
+    }
+    if (chatStore.sessionId === null) {
+      return
+    }
     await ElMessageBox.confirm('确定删除该对话吗？', '提示', { type: 'warning' })
-    deleteSession(chatModel.sessionId!)
-    chatModel.sessionId = null
-    totalTokens.value = 0
+    deleteSession(chatStore.sessionId)
+    chatStore.clearSession()
     ElMessage.success('删除成功')
   } catch (e) {
     void e // ignore
   }
 }
-const handleClearContext = () => {
-  const val = chatView.value?.isStreaming()
-  if (val) {
+const handleNewSession = () => {
+  if (chatStore.isStreaming) {
     ElMessage.error('当前对话中存在未完成的任务')
     return
   }
-  totalTokens.value = 0
-  chatModel.sessionId = crypto.randomUUID()
-}
-const handleTokenUpdate = (tokens: number): void => {
-  totalTokens.value = tokens
+  chatStore.clearSession()
 }
 </script>
 
@@ -138,8 +139,8 @@ const handleTokenUpdate = (tokens: number): void => {
 
             <el-divider direction="vertical" />
 
-            <el-tooltip content="清屏/新会话" placement="bottom">
-              <el-button link :icon="Brush" @click="handleClearContext" />
+            <el-tooltip content="新会话" placement="bottom">
+              <el-button link :icon="CirclePlus" @click="handleNewSession" />
             </el-tooltip>
 
             <el-tooltip content="删除对话" placement="bottom-end">
@@ -148,7 +149,7 @@ const handleTokenUpdate = (tokens: number): void => {
                 link
                 :icon="Delete"
                 @click="handleDeleteChat"
-                :disabled="!canDelteChat"
+                :disabled="isChatDeleteBtnDisabled"
               />
             </el-tooltip>
           </div>
@@ -163,7 +164,7 @@ const handleTokenUpdate = (tokens: number): void => {
           v-bind="historyProps"
           @selectHistory="handleSelectHistory"
         />
-        <chat-view v-else ref="chatView" v-model="chatModel" @token-update="handleTokenUpdate" />
+        <chat-view v-else />
       </KeepAlive>
     </div>
 

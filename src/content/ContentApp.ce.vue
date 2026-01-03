@@ -90,10 +90,8 @@ const open = (type: PromptKeys, clientX: number, clientY: number) => {
   result.value = ''
   loading.value = true
   visible.value = true
-
-  // 简单防溢出逻辑
-  x.value = clientX + 20
-  y.value = clientY + 20
+  x.value = clientX
+  y.value = clientY
 }
 
 const appendChunk = (chunk: string) => {
