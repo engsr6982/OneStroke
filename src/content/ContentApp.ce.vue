@@ -7,8 +7,9 @@
 
     <div class="os-body">
       <div v-if="loading && !result" class="os-loading">思考中...</div>
-      <!-- 使用 pre-wrap 保留 AI 返回的格式 -->
-      <div class="os-content" v-html="formattedResult"></div>
+      <div class="os-content">
+        <MarkdownRender :content="result" />
+      </div>
       <div v-if="loading && result" class="os-cursor"></div>
     </div>
 
@@ -22,6 +23,7 @@
 import { getTagRenderName } from '@/helper'
 import type { PromptKeys } from '@/types/storage'
 import { ref, computed, onBeforeUnmount } from 'vue'
+import { MarkdownRender } from 'markstream-vue'
 
 const visible = ref(false)
 const loading = ref(false)
@@ -31,11 +33,6 @@ const windowRef = ref<HTMLElement | null>(null)
 
 const title = computed(() => {
   return getTagRenderName(currentType?.value as PromptKeys)
-})
-
-// TODO: 改进 Markdown 渲染
-const formattedResult = computed(() => {
-  return result.value.replace(/\n/g, '<br>')
 })
 
 // 窗口位置

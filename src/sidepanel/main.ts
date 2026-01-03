@@ -18,3 +18,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.mount('#app')
+
+import 'markstream-vue/index.css'
+import 'katex/dist/katex.min.css'
+import { enableKatex, enableMermaid } from 'markstream-vue'
+
+enableMermaid()
+enableKatex()

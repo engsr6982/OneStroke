@@ -4,34 +4,49 @@
 
 > 支持最新的 Manifest V3 规范
 
-- [x] 划词总结
-      对选择的内容进行总结，并生成摘要
-- [x] 划词笔记
-      对选择的内容进行笔记，并生成笔记
-- [x] 划词解析
-      对选择的内容进行解析，并生成解析结果
-- [x] 模型配置
-  - [x] 模型选择
-  - [x] API Key
-  - [x] 请求地址
-  - [x] 模型名称
+## 功能
+
+- [x] 划词(悬浮窗)
+  - [x] 划词总结
+  - [x] 划词笔记
+  - [x] 划词解析
+- [x] 设置(弹窗)
+  - [x] 模型配置
+    - [x] 配置模板
+    - [x] API Key 配置
+    - [x] 请求地址
+    - [x] 模型配置
   - [x] Prompt 配置
-- [x] 历史记录
-  - [x] 查看历史记录
-  - [x] 搜索/过滤
-- [ ] Markdown 渲染
-- [x] 深入探讨(对话)
-  - [x] 文本引用
-  - [x] token 显示
+    - [x] 总结 Prompt
+    - [x] 笔记 Prompt
+    - [x] 解析 Prompt
+    - [x] 恢复默认
+- [x] 侧边栏
+  - [x] 历史记录
+    - [x] 搜索/过滤
+    - [x] 清理
+  - [x] 对话
+    - [x] Token 显示
+    - [x] 实时划词引用
+    - [x] 对话记录
+- [x] Markdown 渲染
 
 ## 技术栈
 
-1. TypeScript: JavaScript 的超集，提供静态类型检查，提高代码可维护性和可读性
-2. Vue3: 前端框架，用于构建用户界面
-3. Pinia: Vue3 的状态管理库，用于管理SidePanel的状态
-4. Element Plus: 基于 Vue3 的 UI 框架，用于快速构建美观的界面
-5. Prettier: 代码格式化工具统一项目代码风格
-6. ESLint: 代码检查工具，统一代码风格，提高代码质量
+1. **TypeScript**: **JavaScript** 的超集，提供静态类型检查，提高代码可维护性和可读性
+2. **Vue3**: 前端框架，用于构建用户界面
+3. **Pinia**: **Vue3** 的状态管理库，用于管理**SidePanel**的状态
+4. **Element Plus**: 基于 **Vue3** 的 UI 框架，用于快速构建美观的界面
+5. **Prettier**: 代码格式化工具统一项目代码风格
+6. **ESLint**: 代码检查工具，统一代码风格，提高代码质量
+7. [**markstream-vue**](https://github.com/Simon-He95/markstream-vue): **Markdown** 流式渲染组件，用于渲染解析结果
+
+> **markstream-vue** 含下列附属组件
+>
+> 1. **shiki**、**stream-markdown**: 语法高亮
+> 2. **stream-monaco**: 代码块
+> 3. **mermaid**: 流程图
+> 4. **katex**: 数学公式
 
 ## 使用
 

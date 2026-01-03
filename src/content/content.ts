@@ -3,6 +3,12 @@ import type { AppMessage } from '../types/message'
 import elementPlusCss from 'element-plus/dist/index.css?inline'
 import { createApp } from 'vue'
 
+import 'markstream-vue/index.css'
+import 'katex/dist/katex.min.css'
+import { enableKatex, enableMermaid } from 'markstream-vue'
+enableMermaid()
+enableKatex()
+
 const log = (msg: string, ...args: unknown[]) =>
   console.log(`%c[OneStroke Content] ${msg}`, 'color: #409eff; font-weight: bold;', ...args)
 

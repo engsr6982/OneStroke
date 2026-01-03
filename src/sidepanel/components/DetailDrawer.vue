@@ -3,6 +3,7 @@ import { deleteSession, getSession, getTagRenderName } from '@/helper'
 import type { SessionData, SessionID, SessionMeta } from '@/types/storage'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, watch } from 'vue'
+import { MarkdownRender } from 'markstream-vue'
 
 export interface DetailDrawerProps {
   meta: SessionMeta | null
@@ -120,7 +121,7 @@ const deleteItem = async (id: SessionID) => {
           <!-- 结果页 -->
           <div v-if="msg.role === 'assistant'" v-show="tab === 'result'" class="scroll-wrapper">
             <div class="text-content result-text">
-              <pre>{{ msg.content }}</pre>
+              <MarkdownRender :content="msg.content" />
             </div>
           </div>
 

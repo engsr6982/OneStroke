@@ -35,8 +35,7 @@
             <el-icon><Service /></el-icon> AI
           </div>
           <div class="message-content">
-            <!-- TODO: markdown 渲染 -->
-            {{ msg.content }}
+            <MarkdownRender :content="msg.content" />
             <span
               v-if="chatStore.isStreaming && index === chatStore.sessionData.messages.length - 1"
               class="cursor"
@@ -109,6 +108,7 @@ import type {
   ChatCompletionUserMessageParam,
 } from 'openai/resources'
 import { useChatStore } from '../stores/chat'
+import { MarkdownRender } from 'markstream-vue'
 
 // ================= 状态管理 =================
 
