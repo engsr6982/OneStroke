@@ -29,7 +29,11 @@
     - [x] Token 显示
     - [x] 实时划词引用
     - [x] 对话记录
-- [x] Markdown 渲染
+- [x] Markdown 渲染(基于**markstream-vue**)
+  - [x] 语法高亮
+  - [x] 代码块
+  - [x] 流程图
+  - [x] 数学公式
 
 ## 技术栈
 
