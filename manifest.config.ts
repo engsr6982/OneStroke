@@ -1,9 +1,10 @@
 import { defineManifest } from '@crxjs/vite-plugin'
+import pkg from './package.json'
 
 export default defineManifest({
   manifest_version: 3,
   name: 'OneStroke',
-  version: '0.1.0',
+  version: pkg.version,
   description: 'AI 划词总结 / AI 划词笔记 / AI 划词解析',
 
   permissions: ['storage', 'contextMenus', 'activeTab', 'sidePanel', 'unlimitedStorage'],
