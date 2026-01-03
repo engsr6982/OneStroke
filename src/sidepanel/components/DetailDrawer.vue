@@ -57,8 +57,16 @@ watch(
   { immediate: true }, // 组件初始化时如果 meta 不为空，也会触发
 )
 
-const copyText = async (text: string) => {
+const copyText = async () => {
   try {
+    const text =
+      tab.value === 'result'
+        ? sessionData.value?.messages[2]?.content
+        : sessionData.value?.messages[1]?.content
+    if (!text) {
+      ElMessage.error('没有内容可以复制')
+      return
+    }
     await navigator.clipboard.writeText(text)
     ElMessage.success('已复制')
   } catch (e) {
