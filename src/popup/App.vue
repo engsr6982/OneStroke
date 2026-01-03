@@ -4,8 +4,8 @@
       <!-- TODO: fix icon -->
       <!-- <img src="/icons/icon128.png" alt="Logo" class="logo" /> -->
       <h2>OneStroke 设置</h2>
-      <el-button type="primary" size="small" icon="Clock" plain @click="showSidePanel"
-        >历史</el-button
+      <el-button type="primary" size="small" icon="Fold" plain @click="showSidePanel"
+        >侧边栏</el-button
       >
     </div>
 
@@ -14,7 +14,9 @@
       <el-tab-pane label="模型配置" name="model">
         <el-form :model="modelConfig" label-position="top" size="small">
           <el-form-item label="AI 提供商(内置模板)">
-            <el-text class="mx-1" type="danger">仅支持兼容 OpenAI SDK 的模型</el-text>
+            <el-text v-if="isTipVisible" class="mx-1" type="danger"
+              >注意: 仅支持兼容 OpenAI SDK 的模型</el-text
+            >
             <el-select
               v-model="modelConfig.provider"
               placeholder="选择提供商"
@@ -40,7 +42,7 @@
             <el-input v-model="modelConfig.baseUrl" placeholder="https://api.openai.com/v1" />
           </el-form-item>
 
-          <el-form-item label="模型名称">
+          <el-form-item label="模型ID">
             <el-input v-model="modelConfig.model" placeholder="gpt-4o" />
           </el-form-item>
 
@@ -95,6 +97,7 @@ const activeTab = ref('model')
 const saving = ref(false)
 const modelConfig = reactive<ModelConfig>({ ...DEFAULT_CONFIG })
 const promptConfig = reactive<PromptConfig>({ ...DEFAULT_PROMPTS })
+const isTipVisible = ref(false)
 
 const isDev = computed(() => {
   return import.meta.env.DEV === true
@@ -110,6 +113,7 @@ const handleProviderChange = (val: string) => {
   const provider = ModelProviderTemplate[val as keyof typeof ModelProviderTemplate]
   modelConfig.baseUrl = provider.baseUrl
   modelConfig.model = provider.model
+  isTipVisible.value = val === 'other' // 如果选择其他提供商，显示提示信息
 }
 
 const saveSettings = async () => {
