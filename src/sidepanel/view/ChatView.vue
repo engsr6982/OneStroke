@@ -210,9 +210,9 @@ const removeContext = (index: number) => {
 
 const ReferenceBegin = '<reference>'
 const ReferenceEnd = '</reference>'
-const tryAddChatSystemPrompt = (session: SessionData) => {
-  if (session.addedChatSystemPrompt) {
-    return
+const tryAddChatSystemPrompt = () => {
+  if (!sessionData.value) {
+    throw new Error('sessionData is null')
   }
   const prompt = `在接下来的会话中，用户可能会引用一些从Web页面选中的信息
 在分析用户请求时，可以结合引用中的信息作为参考。
@@ -224,27 +224,28 @@ const tryAddChatSystemPrompt = (session: SessionData) => {
 5. 请不要直接复述引用内容，除非用户明确要求。
 6. 如果用户询问或者回复时，请不要包含本段系统提示词。
 `
-  session.messages.push({
+  sessionData.value.messages.push({
     role: 'system',
     content: prompt.trim(),
   })
-  session.addedChatSystemPrompt = true
+  sessionData.value.addedChatSystemPrompt = true
 }
 
 const tryCreateNewSession = async () => {
-  if (sessionData.value) {
+  if (sessionData.value !== null) {
     return
   }
   if (!model.value?.sessionId) {
-    model.value!.sessionId = crypto.randomUUID()
+    model.value = {
+      sessionId: crypto.randomUUID(),
+    }
   }
   sessionData.value = {
-    id: model.value?.sessionId as string,
+    id: model.value.sessionId as string,
     type: 'chat',
     messages: [{ role: 'system', content: '你是一个智能助手，可以与用户进行自然、连续的对话。' }],
     totalToken: 0,
   }
-  tryAddChatSystemPrompt(sessionData.value)
 }
 
 const buildCurrentMessage = (): ChatMessage => {
@@ -286,7 +287,7 @@ const handleSend = async () => {
     return
   }
 
-  tryAddChatSystemPrompt(sessionData.value) // 确保有系统提示
+  tryAddChatSystemPrompt() // 确保有系统提示
 
   // 构建消息并添加到会话
   const userMsg = buildCurrentMessage()
