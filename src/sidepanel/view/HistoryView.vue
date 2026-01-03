@@ -14,6 +14,7 @@
               getTagRenderName(item.type)
             }}</el-tag>
             <div class="item-header-lf-title">{{ item.title }}</div>
+            <el-icon class="edit-icon" @click.stop="openEditDialog(item)"> <Edit /> </el-icon>
           </div>
           <span class="item-header-rh-time">{{ formatDate(item.updatedAt) }}</span>
         </div>
@@ -21,6 +22,22 @@
         <div v-if="isDev">{{ item.id }}</div>
       </div>
     </el-scrollbar>
+
+    <!-- 编辑标题 -->
+    <el-dialog v-model="editDialogVisible" title="修改标题" width="400px" align-center>
+      <el-input
+        v-model="editingTitle"
+        placeholder="请输入新标题"
+        @keydown.enter="saveTitle"
+        autofocus
+      />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveTitle">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -34,6 +51,7 @@ import {
   getTagRenderType,
   SessionMetaRefsKey,
 } from '@/helper'
+import { Edit } from '@element-plus/icons-vue'
 
 const props = defineProps<{
   serachKeyword: string
@@ -82,6 +100,30 @@ onUnmounted(() => {
 })
 
 const showDetail = (item: SessionMeta) => emits('selectHistory', item)
+
+const editDialogVisible = ref(false)
+const editingTitle = ref('')
+const editingId = ref('')
+
+const openEditDialog = (item: SessionMeta) => {
+  editingId.value = item.id
+  editingTitle.value = item.title || ''
+  editDialogVisible.value = true
+}
+
+const saveTitle = async () => {
+  if (!editingId.value) return
+  const allMetas = await getSessionMetas()
+  if (!allMetas) {
+    return
+  }
+  const index = allMetas.findIndex((i) => i.id === editingId.value)
+  if (index !== -1) {
+    allMetas[index]!.title = editingTitle.value
+    await chrome.storage.local.set({ [SessionMetaRefsKey]: allMetas })
+  }
+  editDialogVisible.value = false
+}
 </script>
 
 <style scoped>
@@ -118,7 +160,24 @@ const showDetail = (item: SessionMeta) => emits('selectHistory', item)
   overflow: hidden; /* 溢出隐藏 */
   text-overflow: ellipsis; /* 溢出省略 */
   white-space: nowrap; /* 禁止换行 */
+  align-items: center; /* 确保图标垂直居中 */
 }
+/* 编辑图标样式 */
+.edit-icon {
+  font-size: 14px;
+  color: #c0c4cc;
+  cursor: pointer;
+  flex-shrink: 0; /* 防止图标被挤压消失 */
+  display: none; /* 默认隐藏，保持界面整洁 */
+}
+/* 鼠标悬停在该行时显示图标 */
+.history-item:hover .edit-icon {
+  display: inline-flex;
+}
+.edit-icon:hover {
+  color: #409eff;
+}
+
 .item-header-rh-time {
   font-size: 12px;
   color: #909399;
