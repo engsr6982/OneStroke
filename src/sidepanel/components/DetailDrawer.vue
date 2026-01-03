@@ -101,7 +101,7 @@ const deleteItem = async (id: SessionID) => {
       <!-- 工具 -->
       <div class="drawer-header">
         <div class="header-left">
-          <span class="title">{{ getTagRenderName(sessionData.type) }}结果</span>
+          <span class="title">{{ getTagRenderName(sessionData.type) }}</span>
           <el-radio-group v-model="tab" size="small">
             <el-radio-button value="result">AI 结果</el-radio-button>
             <el-radio-button value="original">原文</el-radio-button>
