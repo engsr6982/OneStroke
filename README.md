@@ -74,27 +74,39 @@ npm run build
 ## 项目结构
 
 ```bash
-.
-├─public/ # 静态资源
-│      manifest.json
-│      popup.html
-├─src/
-│    │  background.ts # 后台脚本
-│    │
-│    ├─content/ # 内容脚本(悬浮窗)
-│    │      App.vue
-│    │      content.ts
-│    │      loader.ts
-│    │
-│    ├─popup/ # 弹窗脚本
-│    │      App.vue
-│    │      main.ts
-│    │
-│    └─types/ # 类型定义
-│           message.ts
-│           storage.ts
-|
-└─ ... # 其它文件(项目配置、脚本等)
+.\ONESTROKE\SRC
+│  background.ts # 后台脚本
+│  helper.ts # 辅助函数
+│  test_debug.ts # 测试脚本
+│
+├─content # 内容脚本
+│      content.ts
+│      ContentApp.ce.vue
+│
+├─popup # 弹窗脚本
+│      App.vue
+│      index.html
+│      main.ts
+│
+├─sidepanel # 侧边栏脚本
+│  │  App.vue # 侧边栏入口
+│  │  index.html
+│  │  main.ts
+│  │
+│  ├─components
+│  │      DetailDrawer.vue # 详情抽屉
+│  │
+│  ├─stores
+│  │      chat.ts # 对话状态管理
+│  │
+│  └─view
+│          ChatView.vue # 对话视图
+│          HistoryView.vue # 历史视图
+│
+└─types
+        constant.ts # 常量
+        message.ts  # 消息类型
+        storage.ts # 存储类型
 ```
 
 ## 问题记录
