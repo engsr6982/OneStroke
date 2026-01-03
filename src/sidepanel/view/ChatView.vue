@@ -5,8 +5,8 @@
       <el-empty description="请从历史记录选择或开始新会话" />
     </div>
     <el-scrollbar v-else view-class="message-list">
-      <span>sessionId: {{ chatStore.sessionId }}</span>
-      <span>sessionDataId: {{ chatStore.sessionData.id }}</span>
+      <span v-if="isDev">sessionId: {{ chatStore.sessionId }}</span>
+      <span v-if="isDev">sessionDataId: {{ chatStore.sessionData.id }}</span>
       <div v-for="(msg, index) in renderMessages" :key="index" class="message-block">
         <!-- User 消息样式 -->
         <template v-if="msg.role === 'user'">
@@ -119,6 +119,10 @@ const messageListRef = ref<InstanceType<typeof ElScrollbar> | null>(null)
 
 const renderMessages = computed(() => {
   return chatStore.sessionData?.messages.filter((i) => i.role !== 'system') // 过滤掉 system 消息
+})
+
+const isDev = computed(() => {
+  return import.meta.env.DEV
 })
 
 // ================= 辅助逻辑 =================
