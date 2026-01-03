@@ -4,7 +4,7 @@
     <div v-if="!chatStore.sessionData" class="empty-state">
       <el-empty description="请从历史记录选择或开始新会话" />
     </div>
-    <el-scrollbar v-else view-class="message-list">
+    <el-scrollbar v-else ref="messageListRef" class="chat-scrollbar" view-class="message-list">
       <span v-if="isDev">sessionId: {{ chatStore.sessionId }}</span>
       <span v-if="isDev">sessionDataId: {{ chatStore.sessionData.id }}</span>
       <div v-for="(msg, index) in renderMessages" :key="index" class="message-block">
@@ -36,11 +36,6 @@
           </div>
           <div class="message-content">
             <MarkdownRender :content="msg.content" />
-            <span
-              v-if="chatStore.isStreaming && index === chatStore.sessionData.messages.length - 1"
-              class="cursor"
-              >|</span
-            >
           </div>
         </template>
       </div>
@@ -135,19 +130,24 @@ const formatContextPreview = (text: string) => {
 
 const scrollToBottom = async () => {
   await nextTick()
-  const wrap = messageListRef.value?.wrapRef
-  if (wrap) {
-    messageListRef.value?.setScrollTop(wrap.scrollHeight)
-  }
+  setTimeout(() => {
+    const scrollbar = messageListRef.value
+    if (!scrollbar) return
+    const wrap = scrollbar.wrapRef
+    if (wrap) {
+      scrollbar.setScrollTop(wrap.scrollHeight)
+    }
+  }, 0)
 }
 
-// ================= 数据加载 =================
+// ================= 数据变动 =================
 
 watch(
-  () => chatStore.sessionId,
-  async (newId) => {
-    console.debug('chat sessionId changed: ', newId)
-    if (newId && chatStore.sessionData) {
+  () => chatStore.sessionData,
+  async (newData) => {
+    console.debug('chatStore.sessionData 变更: ', newData)
+    if (chatStore.sessionData != null) {
+      console.debug('新的会话存在，尝试滚动到底部...')
       scrollToBottom()
     }
   },
@@ -341,9 +341,11 @@ const handleSend = async () => {
 }
 
 /* --- 消息列表区域 --- */
-:deep(.message-list) {
+:deep(.chat-scrollbar) {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden; /* 防止溢出父容器 */
+}
+:deep(.message-list) {
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -405,26 +407,6 @@ const handleSend = async () => {
   white-space: pre-wrap; /* 保留换行 */
   padding: 0 4px;
   overflow-wrap: break-word; /* 自动换行 */
-}
-
-/* 光标动画 */
-.cursor {
-  display: inline-block;
-  width: 2px;
-  height: 14px;
-  background-color: #303133;
-  animation: blink 1s infinite;
-  vertical-align: middle;
-  margin-left: 2px;
-}
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
 }
 
 /* --- 底部输入区域 --- */
